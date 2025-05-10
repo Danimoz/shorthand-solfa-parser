@@ -9,10 +9,10 @@ export default function Guide() {
               <code className="rounded bg-muted px-1">d, r, m, f, s, l, t</code> - Solfa syllables (do, re, mi, fa, sol, la, ti)
             </li>
             <li>
-              <code className="rounded bg-muted px-1">dₗ, rₗ, mₗ</code> - Lower octave notes
+              <code className="rounded bg-muted px-1">dₗ, rₗ, m₂</code> - Lower octave notes
             </li>
             <li>
-              <code className="rounded bg-muted px-1">dᵘ, rᵘ, mᵘ</code> - Upper octave notes
+              <code className="rounded bg-muted px-1">d', r″, m²</code> - Upper octave notes
             </li>
             <li>
               <code className="rounded bg-muted px-1">:</code> - Separator (sep_colon)
@@ -36,6 +36,7 @@ export default function Guide() {
             <li><code className="rounded bg-muted px-1">*</code><em>mod*</em> - Key modulation (e.g., *G*)</li>
             <li><code className="rounded bg-muted px-1">#</code><em>num/num</em> - Meter change (e.g., #3/4)</li>
             <li><code className="rounded bg-muted px-1">@</code><em>key</em> - Key signature (e.g., @Eb)</li>
+            <li><code className="rounded bg-muted px-1">+</code> - Multi line lyric m(Show + Serve)</li>
             <li><code className="rounded bg-muted px-1">|</code> - Barline</li>
             <li><code className="rounded bg-muted px-1">||</code> - Double barline</li>
           </ul>

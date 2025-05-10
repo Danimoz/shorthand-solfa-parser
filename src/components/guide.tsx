@@ -12,7 +12,7 @@ export default function Guide() {
               <code className="rounded bg-muted px-1">dₗ, rₗ, m₂</code> - Lower octave notes
             </li>
             <li>
-              <code className="rounded bg-muted px-1">d', r″, m²</code> - Upper octave notes
+              <code className="rounded bg-muted px-1">d&apos;, r″, m²</code> - Upper octave notes
             </li>
             <li>
               <code className="rounded bg-muted px-1">:</code> - Separator (sep_colon)

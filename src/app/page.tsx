@@ -1,103 +1,133 @@
-import Image from "next/image";
+'use client';
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/text-area";
+import { parseShorthandSolfa } from "@/lib/parser";
+import { Info, Clipboard } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import Guide from "@/components/guide";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [output, setOutput] = useState("")
+  const [error, setError] = useState("")
+  const [input, setInput] = useState(`S. d(God) : r(you) . m(take) : - . r(a) : m(way) . s(the)
+A. d : x : tₗ : x
+T. s : x : s : x
+B. d(uh) : x : mₗ(uh) : x`
+  )
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  function handleParse(){
+    try {
+      setError('')
+      const parsed = parseShorthandSolfa(input)
+      setOutput(JSON.stringify(parsed, null, 2))
+    } catch(err) {
+      setError('Error parsing the input. Please check the format and try again.')
+      toast.error(err instanceof Error ? err.message : String(err))
+      console.error(err)
+    }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(output)
+    toast.success("Copied to clipboard", {
+      description: "The JSON has been copied to your clipboard",
+    })
+  }
+  
+  return (
+    <main className="py-8">
+      <h1 className="text-center text-4xl font-bold mb-8">Solfa Notation Parser</h1>
+
+      <div className="mb-6">
+        <Alert className="gap-x-4">
+          <Info className="h-5 w-5" />
+          <AlertTitle>How to Use</AlertTitle>
+          <AlertDescription>
+            Enter shorthand solfa notation with parts labeled as S., A., T., or B. at the beginning of each line. Notes
+            are represented as solfa syllables (d, r, m, etc.), lyrics in parentheses, and special symbols like colons
+            (:), dots (.), and extends (-).
+          </AlertDescription>
+        </Alert>
+      </div>
+
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Input</CardTitle>
+            <CardDescription>Enter your shorthand solfa notation here</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              placeholder="Enter solfa notation..."
+              className="min-h-[500px] font-mono"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              wrap="off"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={handleParse} className="w-full">
+              Parse Notation
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Output</CardTitle>
+            <CardDescription>Structured JSON representation</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error ? (
+              <div className="rounded-md bg-destructive/15 p-4 text-destructive">
+                <p className="font-medium">Error</p>
+                <p>{error}</p>
+              </div>
+            ) : (
+              <div className="relative">
+                <pre className="max-h-[500px] overflow-auto rounded-md bg-muted p-4 font-mono text-sm">
+                  {output || "JSON output will appear here"}
+                </pre>
+                {output && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="absolute right-8 top-2"
+                    onClick={copyToClipboard}
+                  >
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="justify-end">
+            {output && (
+              <Button variant="outline" onClick={copyToClipboard}>
+                <Clipboard className="mr-2 h-4 w-4" />
+                Copy JSON
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Notation Guide</CardTitle>
+            <CardDescription>Reference for shorthand solfa notation symbols</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Guide />
+          </CardContent>
+        </Card>
+      </div>
+      
+    </main>
   );
 }

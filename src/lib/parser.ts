@@ -31,7 +31,6 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
       const { measureContent } = parsePartContentByMeasure(partContent, partName, currentMeasure)
 
       for (const [measureIdx, content] of Object.entries(measureContent)) {
-
         const measureNumber = parseInt(measureIdx)
         if (!measuresMap.has(measureNumber)) {
           measuresMap.set(measureNumber, {
@@ -57,7 +56,6 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
     }
   }
   const measures = Array.from(measuresMap.values()).sort((a, b) => a.number - b.number);
-  console.log(measures)
   return measures
 }
 
@@ -310,6 +308,11 @@ function parseNote(charIdx: number, content: string, partName: string): SolfaSym
   // check for two character solfa symbols
   while (end < content.length && /[a-zA-Z0-9'₂ₗ²″]/.test(content[end])) {
     note += content[end]
+    end++
+  }
+
+  // check for whitespace
+  while (end < content.length && /\s/.test(content[end])) {
     end++
   }
 

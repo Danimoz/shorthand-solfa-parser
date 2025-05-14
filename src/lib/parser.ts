@@ -77,6 +77,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
   let currentSymbols: SolfaSymbol[] = []
   let i = 0
   let pendingSlurStart = false
+  let applySlurStartToUpcomingNote = false
   let pendingDynamic: string | null = null
   let pendingModulation: string | null = null
   let currentRepeat: SimpleSymbol | undefined = undefined
@@ -85,9 +86,8 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
 
   while (i < content.length) {
     const char = content[i]
-
     // Skip Whitespace
-    if (char === " ") {
+    if (/\s/.test(char)) {
       i++
       continue
     }
@@ -139,18 +139,30 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       continue
     }
 
-    // Check for slur start
+    // Check for slurs
     if (char === "~") {
-      pendingSlurStart = true
-      i++
-      continue
+      i++;
+      if (pendingSlurStart) {
+        const lastSymbol = currentSymbols[currentSymbols.length - 1]
+        if (!lastSymbol || lastSymbol.symbol_type !== "note") {
+          throw new Error(`Unmatched ~ in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
+        }
+        lastSymbol.slurEnd = true
+        pendingSlurStart = false
+        applySlurStartToUpcomingNote = false
+        continue
+      } else {  
+        pendingSlurStart = true
+        applySlurStartToUpcomingNote = true
+        continue
+      }
     }
 
     // Check for Dynamics
     if (char === "[") {
       const endIdx = content.indexOf("]", i)
       if (endIdx === -1) {
-        throw new Error(`Unmatched [ in dynamics: at ${partName} - ${content}`)
+        throw new Error(`Unmatched [ in dynamics: at ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       pendingDynamic = content.slice(i + 1, endIdx)
       i = endIdx + 1
@@ -161,7 +173,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     if (char === "#") {
       const meterMatch = content.slice(i + 1).match(/^(\d+)\/(\d+)/)
       if (!meterMatch) {
-        throw new Error(`Invalid time signature format in ${partName} : ${content.slice(i, i + 6)}`)
+        throw new Error(`Invalid time signature format in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       const meterChange = meterMatch[0]
       currentMeter = meterChange
@@ -193,7 +205,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
           continue
         }
       } 
-      throw new Error(`Expected digit after & in repeat ending at ${partName} : ${content}`);
+      throw new Error(`Expected digit after & in repeat ending at ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`);
     }
 
     // Check for repeat
@@ -221,7 +233,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     if (char === '*'){
       const endIdx = content.indexOf("*", i)
       if (endIdx === -1) {
-        throw new Error(`Unmatched * in modulation: at ${partName} - ${content}`)
+        throw new Error(`Unmatched * in modulation: at ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       pendingModulation = content.slice(i + 1, endIdx)
       i = endIdx + 1
@@ -231,10 +243,15 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     // Check for Note
     if (isSolfaStart(char)) {
       const noteData = parseNote(i, content, partName)
-      if (pendingSlurStart) {
-        noteData.slurStart = true
-        pendingSlurStart = false
+      if (applySlurStartToUpcomingNote) {
+        if (!pendingSlurStart) {
+          // This is a sanity check; if applySlurStartToUpcomingNote is true, pendingSlurStart should also be true.
+          throw new Error(`Internal parser error: applySlurStartToUpcomingNote is true, but pendingSlurStart (slur active flag) is false. Part: ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`);
+        }
+        noteData.slurStart = true;
+        applySlurStartToUpcomingNote = false; 
       }
+
       if (pendingDynamic) {
         noteData.dynamic = pendingDynamic
         pendingDynamic = null
@@ -250,26 +267,15 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       continue
     }
 
-    // Check for slur end
-    if (char === "~") {
-      const lastSymbol = currentSymbols[currentSymbols.length - 1]
-      if (lastSymbol.symbol_type !== "note") {
-        throw new Error(`Unmatched ~ in ${partName} : ${content}`)
-      }
-      lastSymbol.slurEnd = true
-      i++
-      continue
-    }
-
     // Check for divisi
     if (char === "{") {
       const endIdx = content.indexOf("}", i)
       if (endIdx === -1) {
-        throw new Error(`Unmatched { in ${partName} : ${content}`)
+        throw new Error(`Unmatched { in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       const lastSymbol = currentSymbols[currentSymbols.length - 1]
       if (lastSymbol.symbol_type !== "note") {
-        throw new Error(`Unmatched { in ${partName} : ${content}`)
+        throw new Error(`Unmatched { in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       const divNote = content.slice(i + 1, endIdx)
       lastSymbol.div_note = divNote
@@ -278,8 +284,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     }
 
     // If we reach here, character isn't recognized
-    i++;
-    throw new Error(`Unrecognized character "${char}" in ${partName} : ${content}`)
+    throw new Error(`Unrecognized character "${char}" in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
     //console.warn(`Unrecognized character "${char}" in ${partName} : ${content}`)
   }
 
@@ -311,7 +316,7 @@ function parseNote(charIdx: number, content: string, partName: string): SolfaSym
   if (content[end] === "(") {
     const endIdx = content.indexOf(")", end)
     if (endIdx === -1) {
-      throw new Error(`Unmatched ( in ${partName} : ${content}`)
+      throw new Error(`Unmatched ( in ${partName} : ${content.slice(charIdx, end)}`)
     }
     const lyricString = content.slice(end + 1, endIdx)
     lyrics = lyricString.split("+")

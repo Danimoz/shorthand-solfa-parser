@@ -37,6 +37,7 @@ export default function Guide() {
             <li><code className="rounded bg-muted px-1">#</code><em>num/num</em> - Meter change (e.g., #3/4)</li>
             <li><code className="rounded bg-muted px-1">@</code><em>key</em> - Key signature (e.g., @Eb)</li>
             <li><code className="rounded bg-muted px-1">+</code> - Multi line lyric m(Show + Serve)</li>
+            <li><code className="rounded bg-muted px-1">R8</code> - Multi bar rests (This means 8 bars of rest)</li>
             <li><code className="rounded bg-muted px-1">|</code> - Barline</li>
             <li><code className="rounded bg-muted px-1">||</code> - Double barline</li>
           </ul>

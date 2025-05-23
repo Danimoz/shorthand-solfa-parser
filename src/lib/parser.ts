@@ -44,7 +44,7 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
         measure!.parts[partName] = content.symbols;
 
         if (content.barlineType) measure!.barline = { symbol_type: content.barlineType.symbol_type, value: content.barlineType.value }
-        if (content.meter)  measure!.meter = content.meter
+        if (content.meter) measure!.meter = content.meter
         if (content.key) measure!.key = content.key
         if (content.repeats) measure!.repeats = content.repeats
       }
@@ -69,7 +69,7 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
  */
 function parsePartContentByMeasure(content: string, partName: string, startingMeasure: number) {
   let currentMeasure = startingMeasure
-  const  measureContent: Record<number, 
+  const measureContent: Record<number,
     { symbols: SolfaSymbol[], barlineType: SimpleSymbol | null, meter?: string | null, key?: string | null, repeats?: SimpleSymbol }
   > = {}
   let currentSymbols: SolfaSymbol[] = []
@@ -149,7 +149,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
         pendingSlurStart = false
         applySlurStartToUpcomingNote = false
         continue
-      } else {  
+      } else {
         pendingSlurStart = true
         applySlurStartToUpcomingNote = true
         continue
@@ -192,17 +192,17 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     }
 
     // Check for 1st, 2nd ,... repeats
-    if (char === '&'){
+    if (char === '&') {
       const endIdx = i + 1
-      if(endIdx < content.length && /^\d$/.test(content[i+1])){
-        const digit = content[i+1]
+      if (endIdx < content.length && /^\d$/.test(content[i + 1])) {
+        const digit = content[i + 1]
         console.log(measureContent[currentMeasure])
-        if (digit === '1' || digit === '2' || digit === '3'){
+        if (digit === '1' || digit === '2' || digit === '3') {
           currentRepeat = { symbol_type: repeatMap[digit], value: `&${digit}` }
           i = endIdx + 1
           continue
         }
-      } 
+      }
       throw new Error(`Expected digit after & in repeat ending at ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`);
     }
 
@@ -227,8 +227,19 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       }
     }
 
+    if (char === 'R') {
+      const numberOfRests = content.slice(i + 1).match(/^\d+/);
+      if (!numberOfRests) {
+        throw new Error(`Invalid rest format in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
+      }
+      const restCount = numberOfRests[0]
+      currentSymbols.push({ symbol_type: "multi_bar_rest", value: `${restCount}` })
+      i += restCount.length + 1
+      continue
+    }
+
     // Check for modulation
-    if (char === '*'){
+    if (char === '*') {
       const endIdx = content.indexOf("*", i)
       if (endIdx === -1) {
         throw new Error(`Unmatched * in modulation: at ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
@@ -247,7 +258,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
           throw new Error(`Internal parser error: applySlurStartToUpcomingNote is true, but pendingSlurStart (slur active flag) is false. Part: ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`);
         }
         noteData.slurStart = true;
-        applySlurStartToUpcomingNote = false; 
+        applySlurStartToUpcomingNote = false;
       }
 
       if (pendingDynamic) {
@@ -286,7 +297,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
     //console.warn(`Unrecognized character "${char}" in ${partName} : ${content}`)
   }
 
-  
+
   // Handle any remaining symbols after the last barline
   if (currentSymbols.length > 0 || currentKey || currentMeter || currentRepeat) {
     measureContent[currentMeasure] = {

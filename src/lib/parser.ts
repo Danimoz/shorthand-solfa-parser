@@ -227,6 +227,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       }
     }
 
+    // Check for multimeasures rest
     if (char === 'R') {
       const numberOfRests = content.slice(i + 1).match(/^\d+/);
       if (!numberOfRests) {
@@ -238,7 +239,21 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       continue
     }
 
-    // Check for modulation
+    // Check for Fermata
+    if (char === '^') {
+      if (currentSymbols.length === 0) {
+        throw new Error(`Fermata '^' found without any preceding symbols in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
+      }
+      const lastNote = currentSymbols[currentSymbols.length - 1]
+      if (lastNote.symbol_type !== "note") {
+        throw new Error(`Fermata '^' can only be applied to notes, found after ${lastNote.symbol_type} in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
+      }
+      lastNote.fermata = true
+      i++
+      continue
+    }
+
+    // Check for modulation guide
     if (char === '*') {
       const endIdx = content.indexOf("*", i)
       if (endIdx === -1) {

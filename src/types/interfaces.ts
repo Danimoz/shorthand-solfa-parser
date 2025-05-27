@@ -7,6 +7,7 @@ export type SolfaSymbol = {
   dynamic?: string
   div_note?: string
   mod_note?: string
+  fermata?: boolean
 }
 
 export interface SimpleSymbol {

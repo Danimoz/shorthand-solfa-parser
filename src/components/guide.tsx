@@ -40,6 +40,7 @@ export default function Guide() {
             <li><code className="rounded bg-muted px-1">R8</code> - Multi bar rests (This means 8 bars of rest)</li>
             <li><code className="rounded bg-muted px-1">|</code> - Barline</li>
             <li><code className="rounded bg-muted px-1">||</code> - Double barline</li>
+            <li><code className="rounded bg-muted px-1">^</code> - Fermata</li>
           </ul>
         </div>
       </div>

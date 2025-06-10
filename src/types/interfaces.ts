@@ -26,6 +26,7 @@ export interface Measures {
   barline: SimpleSymbol
   meter?: string
   key?: string
+  multi_bar_rest?: SimpleSymbol
 }
 
 export interface Project {

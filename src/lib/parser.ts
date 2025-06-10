@@ -47,6 +47,7 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
         if (content.meter) measure!.meter = content.meter
         if (content.key) measure!.key = content.key
         if (content.repeats) measure!.repeats = content.repeats
+        if (content.multi_bar_rest) measure!.multi_bar_rest = content.multi_bar_rest
       }
     }
     // update the current measure number
@@ -70,7 +71,7 @@ export function parseShorthandSolfa(input: string, startingMeasure = 1) {
 function parsePartContentByMeasure(content: string, partName: string, startingMeasure: number) {
   let currentMeasure = startingMeasure
   const measureContent: Record<number,
-    { symbols: SolfaSymbol[], barlineType: SimpleSymbol | null, meter?: string | null, key?: string | null, repeats?: SimpleSymbol }
+    { symbols: SolfaSymbol[], barlineType: SimpleSymbol | null, meter?: string | null, key?: string | null, repeats?: SimpleSymbol, multi_bar_rest?: SimpleSymbol | null }
   > = {}
   let currentSymbols: SolfaSymbol[] = []
   let i = 0
@@ -81,6 +82,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
   let currentRepeat: SimpleSymbol | undefined = undefined
   let currentMeter: string | null = null
   let currentKey: string | null = null
+  let multi_bar_rest: SimpleSymbol | null = null
 
   while (i < content.length) {
     const char = content[i]
@@ -105,7 +107,8 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
         barlineType: barlineType,
         repeats: currentRepeat,
         meter: currentMeter,
-        key: currentKey
+        key: currentKey,
+        multi_bar_rest: multi_bar_rest
       };
 
       // Reset for next measure
@@ -113,6 +116,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       currentRepeat = undefined
       currentMeter = null
       currentKey = null
+      multi_bar_rest = null
       currentMeasure++
       continue
     }
@@ -234,7 +238,7 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
         throw new Error(`Invalid rest format in ${partName}, Context: ${content.substring(Math.max(0, i - 10), i + 10)}`)
       }
       const restCount = numberOfRests[0]
-      currentSymbols.push({ symbol_type: "multi_bar_rest", value: `${restCount}` })
+      multi_bar_rest = { symbol_type: "multi_bar_rest", value: `${restCount}` }
       i += restCount.length + 1
       continue
     }
@@ -320,7 +324,8 @@ function parsePartContentByMeasure(content: string, partName: string, startingMe
       barlineType: null,
       meter: currentMeter,
       key: currentKey,
-      repeats: currentRepeat
+      repeats: currentRepeat,
+      multi_bar_rest: multi_bar_rest
     }
   }
 
